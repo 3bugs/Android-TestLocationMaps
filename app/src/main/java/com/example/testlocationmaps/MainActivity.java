@@ -10,9 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -52,10 +50,9 @@ public class MainActivity extends AppCompatActivity {
                     REQUEST_FINE_LOCATION_PERMISSION
             );
         } else { // Permission granted.
-            main();
-            /*if (checkGooglePlayServicesReady()) {
-
-            }*/
+            if (checkGooglePlayServicesReady()) {
+                main();
+            }
         }
     }
 
@@ -108,13 +105,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_GOOGLE_PLAY_UPDATE) {
-            if (resultCode == RESULT_OK) {
-                // todo:
-            } else {
-                Toast.makeText(this, "Error updating Google Play Services.", Toast.LENGTH_LONG).show();
-                Log.e(TAG, "Error updating Google Play Services.");
-            }
+        switch (requestCode) {
+            case REQUEST_GOOGLE_PLAY_UPDATE:
+                if (resultCode == RESULT_OK) {
+                    main();
+                } else {
+                    String msg = "Google Play Services not updated. App can't continue.";
+                    mTestTextView.setText(msg);
+                }
+                break;
         }
     }
 
@@ -122,13 +121,14 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
         switch (requestCode) {
             case REQUEST_FINE_LOCATION_PERMISSION: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // permission was granted
-                    main();
+                    if (checkGooglePlayServicesReady()) {
+                        main();
+                    }
                 } else {
                     // permission denied
                     String msg = "Permission denied by the user. App can't continue.";
